@@ -4,12 +4,14 @@ import net.minecraft.client.CameraType;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.player.ClientInput;
+import net.minecraft.client.player.Input;
 import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.client.renderer.texture.Tickable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Input;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.ChunkPos;
 import net.xolt.freecam.config.ModBindings;
 import net.xolt.freecam.config.ModConfig;
@@ -18,8 +20,13 @@ import net.xolt.freecam.tripod.TripodSlot;
 import net.xolt.freecam.util.FreeCamera;
 import net.xolt.freecam.util.FreecamPosition;
 import net.xolt.freecam.variant.api.BuildVariant;
+
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+
 
 public class Freecam {
 
@@ -47,17 +54,8 @@ public class Freecam {
         if (isEnabled()) {
             // Prevent player from being controlled when freecam is enabled
             if (mc.player != null && mc.player.input instanceof KeyboardInput && !isPlayerControlEnabled()) {
-                ClientInput input = new ClientInput();
-                Input keyPresses = mc.player.input.keyPresses;
-                input.keyPresses = new Input(
-                        false,
-                        false,
-                        false,
-                        false,
-                        false,
-                        keyPresses.shift(),
-                        false
-                );
+                Input input = new Input();
+                input.shiftKeyDown = mc.player.input.shiftKeyDown; // Makes player continue to sneak after freecam is enabled.
                 mc.player.input = input;
             }
 
@@ -108,6 +106,23 @@ public class Freecam {
             if (ModConfig.INSTANCE.notification.notifyFreecam) {
                 MC.player.displayClientMessage(Component.translatable("msg.freecam.restrictedByConfig", MC.getCurrentServer().ip), true);
             }
+            return;
+        }
+
+        boolean hasAccess = false;
+
+        for (ItemStack stack : MC.player.getInventory().items) {
+            if (stack.is(Items.ENDER_EYE)) {
+                CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+                if (data != null && data.copyTag().getBoolean("freecam_allowed")) {
+                    hasAccess = true;
+                    break;
+                }
+            }
+        }
+
+        if(!hasAccess){
+            MC.player.displayClientMessage(Component.literal("You do not have the free-seeing eye."), true);
             return;
         }
 
@@ -169,7 +184,7 @@ public class Freecam {
             freeCamera.input = new KeyboardInput(MC.options);
         } else {
             MC.player.input = new KeyboardInput(MC.options);
-            freeCamera.input = new ClientInput();
+            freeCamera.input = new Input();
         }
         playerControlEnabled = !playerControlEnabled;
     }
@@ -255,7 +270,7 @@ public class Freecam {
         MC.setCameraEntity(MC.player);
         playerControlEnabled = false;
         freeCamera.despawn();
-        freeCamera.input = new ClientInput();
+        freeCamera.input = new Input();
         freeCamera = null;
 
         if (MC.player != null) {

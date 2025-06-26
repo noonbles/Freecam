@@ -13,8 +13,10 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.xolt.freecam.Freecam;
+import net.xolt.freecam.command.FreecamCommand;
 import net.xolt.freecam.config.ModBindings;
 import net.xolt.freecam.config.ModConfig;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 @Mod(Freecam.MOD_ID)
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -31,6 +33,14 @@ public class FreecamForge {
     @SubscribeEvent
     public static void registerKeymappings(RegisterKeyMappingsEvent event) {
         ModBindings.forEach(event::register);
+    }
+
+    @EventBusSubscriber(modid = Freecam.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+    public static class CommandEvents {
+        @SubscribeEvent
+        public static void onCommandRegister(RegisterCommandsEvent event) {
+            FreecamCommand.register(event.getDispatcher());
+        }
     }
 
     @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
