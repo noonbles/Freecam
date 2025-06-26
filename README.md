@@ -14,10 +14,6 @@ To paraphrase our license, we are not responsible for any damages or liability r
 Among other things, this means it's not our fault if you get banned from a server.
 Here's the [full license](./LICENSE).
 
-## Addendum
-
-This is a **FORK** of Hashalite's freecam mod. I added a command `/freecam_enable [player] which gives the player a custom item that's needed for freecam to work. This is a non-intrusive solution to "server-side" control of a client-side mod's freecam capabilities. *Intended to be used with modpacks!*
-
 ## Translation
 
 You can help [translate Freecam on Crowdin](https://crowdin.com/project/freecam).

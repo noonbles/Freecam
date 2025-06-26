@@ -7,6 +7,7 @@ import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.tags.FluidTags;
@@ -38,7 +39,7 @@ public class FreeCamera extends LocalPlayer {
                     // worldSessionTelemetryManager
                     MC.getTelemetryManager().createWorldSessionManager(false, null, null),
                     // receivedRegistries
-                    MC.player.registryAccess().freeze(),
+                    RegistryAccess.Frozen.EMPTY,
                     // enabledFeatures
                     FeatureFlagSet.of(),
                     // serverBrand
@@ -51,6 +52,8 @@ public class FreeCamera extends LocalPlayer {
                     Collections.emptyMap(),
                     // chatState
                     MC.gui.getChat().storeState(),
+                    // strictErrorHandling
+                    false,
                     // customReportDetails
                     Collections.emptyMap(),
                     // serverLinks
@@ -65,7 +68,6 @@ public class FreeCamera extends LocalPlayer {
 
         setId(id);
         setPose(Pose.SWIMMING);
-        setClientLoaded(true); // Otherwise input is frozen until timeout
         getAbilities().flying = true;
         input = new KeyboardInput(MC.options);
     }
@@ -76,7 +78,7 @@ public class FreeCamera extends LocalPlayer {
     }
 
     public void applyPosition(FreecamPosition position) {
-        snapTo(position.x, position.y, position.z, position.yaw, position.pitch);
+        moveTo(position.x, position.y, position.z, position.yaw, position.pitch);
         xBob = getXRot();
         yBob = getYRot();
         xBobO = xBob; // Prevents camera from rotating upon entering freecam.
